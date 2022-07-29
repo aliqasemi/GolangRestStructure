@@ -2,7 +2,9 @@ package auth
 
 import (
 	"errors"
+	"fmt"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/labstack/echo/v4"
 	"time"
 )
 
@@ -11,14 +13,20 @@ var jwtKey = []byte("supersecretkey")
 type JWTClaim struct {
 	Username string `json:"user-name"`
 	Email    string `json:"email"`
+	ID       string `json:"id"`
 	jwt.StandardClaims
 }
 
-func GenerateJWT(email string, username string) (tokenString string, err error) {
+type AuthContext struct {
+	echo.Context
+}
+
+func GenerateJWT(email string, username string, id string) (tokenString string, err error) {
 	expirationTime := time.Now().Add(1 * time.Hour)
 	claims := &JWTClaim{
 		Email:    email,
 		Username: username,
+		ID:       id,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
 		},
@@ -49,4 +57,12 @@ func ValidateToken(signedToken string) error {
 		return err
 	}
 	return nil
+}
+
+func (c *AuthContext) GetUserId() string {
+	t := c.Get("user")
+	fmt.Println(t)
+	token := c.Get("user").(*jwt.Token)
+	claim := token.Claims.(*JWTClaim)
+	return claim.ID
 }

@@ -16,7 +16,7 @@ type UserRepositoryInterface interface {
 	Create(user models.User) (*mongo.InsertOneResult, error)
 	Update(user models.User, id string) (*mongo.UpdateResult, error)
 	Delete(id string) (*mongo.DeleteResult, error)
-	FindUserByEmailForLogin(email string) (models.User, error)
+	FindUserByPhoneForLogin(email string) (models.User, error)
 }
 
 type userRepository struct {
@@ -84,7 +84,7 @@ func (user userRepository) Delete(id string) (*mongo.DeleteResult, error) {
 	return userCreated, nil
 }
 
-func (user userRepository) FindUserByEmailForLogin(phoneNumber string) (models.User, error) {
+func (user userRepository) FindUserByPhoneForLogin(phoneNumber string) (models.User, error) {
 	userCollection := user.db.GetModelCollection("users")
 	var userFind models.User
 	err := userCollection.FindOne(context.TODO(), bson.D{{"phone-number", phoneNumber}}).Decode(&userFind)

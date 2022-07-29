@@ -16,6 +16,7 @@ func AuthApi(next echo.HandlerFunc) echo.HandlerFunc {
 		if err != nil {
 			return c.JSON(http.StatusForbidden, "You are not authorized!")
 		}
-		return next(c)
+		authContext := &auth.AuthContext{Context: c}
+		return next(authContext)
 	}
 }

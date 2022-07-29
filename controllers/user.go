@@ -105,7 +105,7 @@ func Login(c echo.Context) error {
 	}
 
 	userRepository := repository.UserRepositoryBuilder()
-	userData, err := userRepository.FindUserByEmailForLogin(userModel.PhoneNumber)
+	userData, err := userRepository.FindUserByPhoneForLogin(userModel.PhoneNumber)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -115,19 +115,29 @@ func Login(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, errors.New("invalid password"))
 	}
 
-	tokenString, err := auth.GenerateJWT(userData.Email, userData.UserName)
+	tokenString, err := auth.GenerateJWT(userData.Email, userData.UserName, userData.ID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
 	userData.Password = ""
 	result := struct {
-		BearerToken string      `json:"token,omitempty"`
-		UserInfo    models.User `json:"user,omitempty"`
+		BearerToken string      `json:"token"`
+		UserInfo    models.User `json:"user"`
 	}{
 		BearerToken: "Bearer " + tokenString,
 		UserInfo:    userData,
 	}
 
 	return c.JSON(http.StatusOK, &result)
+}
+
+func Auth(c echo.Context) error {
+	authContext := c.(*auth.AuthContext)
+	userService := repository.UserRepositoryBuilder()
+	user, err := userService.Show(authContext.GetUserId())
+	if err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, user)
 }

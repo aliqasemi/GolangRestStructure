@@ -18,6 +18,7 @@ func SetRout(e *echo.Echo) error {
 	authApi.POST("/users", controllers.Create)
 	authApi.PUT("/users/:id", controllers.Update)
 	authApi.DELETE("/users/:id", controllers.Delete)
-	
+	authApi.GET("/auth", controllers.Auth)
+
 	return nil
 }
