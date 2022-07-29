@@ -3,7 +3,9 @@ package controllers
 import (
 	"basical-app/models"
 	"basical-app/repository"
-	"basical-app/validation"
+	"basical-app/services/auth"
+	"basical-app/validation/user"
+	"errors"
 	"github.com/labstack/echo/v4"
 	"log"
 	"net/http"
@@ -36,13 +38,13 @@ func Create(c echo.Context) error {
 	}
 	userModel, err := userInput.ValidateAndBuildModel()
 	if err != nil {
-		return c.JSON(http.StatusFound, err.Error())
+		return c.JSON(http.StatusBadRequest, err.Error())
 	}
-	users, err := userService.Create(userModel)
+	user, err := userService.Create(userModel)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return c.JSON(http.StatusCreated, users)
+	return c.JSON(http.StatusCreated, user)
 }
 
 func Update(c echo.Context) error {
@@ -61,4 +63,71 @@ func Delete(c echo.Context) error {
 		return err
 	}
 	return c.JSON(http.StatusCreated, users)
+}
+
+func Register(c echo.Context) error {
+	userInput := new(validation.UserInput)
+	if err := c.Bind(userInput); err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	userModel, err := userInput.ValidateAndBuildModel()
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	if err := c.Bind(&userModel); err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	if err := userModel.HashPassword(userModel.Password); err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	userRepository := repository.UserRepositoryBuilder()
+	user, err := userRepository.Create(userModel)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	return c.JSON(http.StatusCreated, user)
+}
+
+func Login(c echo.Context) error {
+	loginInput := new(validation.LoginInput)
+	if err := c.Bind(loginInput); err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	userModel, err := loginInput.ValidateAndBuildModel()
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	userRepository := repository.UserRepositoryBuilder()
+	userData, err := userRepository.FindUserByEmailForLogin(userModel.PhoneNumber)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	err = userData.CheckPassword(loginInput.Password)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, errors.New("invalid password"))
+	}
+
+	tokenString, err := auth.GenerateJWT(userData.Email, userData.UserName)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	userData.Password = ""
+	result := struct {
+		BearerToken string      `json:"token,omitempty"`
+		UserInfo    models.User `json:"user,omitempty"`
+	}{
+		BearerToken: "Bearer " + tokenString,
+		UserInfo:    userData,
+	}
+
+	return c.JSON(http.StatusOK, &result)
 }

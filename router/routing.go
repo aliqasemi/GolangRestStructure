@@ -2,14 +2,22 @@ package router
 
 import (
 	"basical-app/controllers"
+	"basical-app/middleware"
 	"github.com/labstack/echo/v4"
 )
 
 func SetRout(e *echo.Echo) error {
-	e.GET("/users", controllers.Index)
-	e.GET("/users/:id", controllers.Show)
-	e.POST("/users", controllers.Create)
-	e.PUT("/users/:id", controllers.Update)
-	e.DELETE("/users/:id", controllers.Delete)
+
+	e.POST("/register", controllers.Register)
+	e.POST("/login", controllers.Login)
+
+	authApi := e.Group("", middleware.AuthApi)
+
+	authApi.GET("/users", controllers.Index)
+	authApi.GET("/users/:id", controllers.Show)
+	authApi.POST("/users", controllers.Create)
+	authApi.PUT("/users/:id", controllers.Update)
+	authApi.DELETE("/users/:id", controllers.Delete)
+	
 	return nil
 }

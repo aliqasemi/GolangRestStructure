@@ -10,13 +10,14 @@ type (
 	UserInput struct {
 		FirstName       string `json:"first-name" form:"first-name" query:"first-name" param:"first-name" bson:"first-name,omitempty" validate:"required"`
 		LastName        string `json:"last-name" form:"last-name" query:"last-name" param:"last-name" bson:"last-name,omitempty" validate:"required"`
+		UserName        string `json:"user-name" form:"user-name" query:"user-name" param:"user-name" bson:"user-name,omitempty" validate:"required"`
 		Age             int    `json:"age" form:"age" query:"age" param:"age" bson:"age,omitempty" validate:"gte=0,lte=130"`
 		Password        string `json:"password" form:"password" query:"password" param:"password" bson:"password,omitempty" validate:"min=6,eqfield=ConfirmPassword"`
 		ConfirmPassword string `json:"confirm-password" form:"confirm-password" query:"confirm-password" param:"confirm-password" bson:"confirm-password,omitempty"`
 		PhoneNumber     string `json:"phone-number" form:"phone-number" query:"phone-number" param:"phone-number" bson:"phone-number,omitempty" validate:"min=10"`
 		Email           string `json:"email" form:"email" query:"email" param:"email" bson:"email,omitempty" validate:"required,email"`
 	}
-	CustomValidator struct {
+	RegisterValidator struct {
 		validator *validator.Validate
 	}
 )
@@ -27,16 +28,16 @@ type UserValidation interface {
 }
 
 func (input *UserInput) ValidateAndBuildModel() (models.User, error) {
-	validatorInput := &CustomValidator{validator: validator.New()}
+	validatorInput := &RegisterValidator{validator: validator.New()}
 	validate, err := validatorInput.validate(input)
 	if validate {
-		return buildModel(input), nil
+		return validatorInput.buildModel(input), nil
 	} else {
 		return models.User{}, err.(validator.ValidationErrors)
 	}
 }
 
-func (validator *CustomValidator) validate(input *UserInput) (bool, error) {
+func (validator *RegisterValidator) validate(input *UserInput) (bool, error) {
 	if err := validator.validator.Struct(input); err != nil {
 		return false, err
 	} else {
@@ -44,7 +45,7 @@ func (validator *CustomValidator) validate(input *UserInput) (bool, error) {
 	}
 }
 
-func buildModel(input *UserInput) models.User {
+func (validator *RegisterValidator) buildModel(input *UserInput) models.User {
 	return models.User{
 		FirstName:   input.FirstName,
 		LastName:    input.LastName,
