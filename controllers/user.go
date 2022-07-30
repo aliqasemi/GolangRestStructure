@@ -121,15 +121,11 @@ func Login(c echo.Context) error {
 	}
 
 	userData.Password = ""
-	result := struct {
-		BearerToken string      `json:"token"`
-		UserInfo    models.User `json:"user"`
-	}{
-		BearerToken: "Bearer " + tokenString,
-		UserInfo:    userData,
-	}
 
-	return c.JSON(http.StatusOK, &result)
+	return c.JSON(http.StatusOK, echo.Map{
+		"token": "Bearer " + tokenString,
+		"user":  userData,
+	})
 }
 
 func Auth(c echo.Context) error {

@@ -1,14 +1,12 @@
 package auth
 
 import (
-	"errors"
-	"fmt"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 	"time"
 )
 
-var jwtKey = []byte("supersecretkey")
+var JwtKey = []byte("secret")
 
 type JWTClaim struct {
 	Username string `json:"user-name"`
@@ -32,36 +30,11 @@ func GenerateJWT(email string, username string, id string) (tokenString string, 
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err = token.SignedString(jwtKey)
+	tokenString, err = token.SignedString(JwtKey)
 	return
 }
 
-func ValidateToken(signedToken string) error {
-	token, err := jwt.ParseWithClaims(
-		signedToken,
-		&JWTClaim{},
-		func(token *jwt.Token) (interface{}, error) {
-			return []byte(jwtKey), nil
-		},
-	)
-	if err != nil {
-		return err
-	}
-	claims, ok := token.Claims.(*JWTClaim)
-	if !ok {
-		err = errors.New("couldn't parse claims")
-		return err
-	}
-	if claims.ExpiresAt < time.Now().Local().Unix() {
-		err = errors.New("token expired")
-		return err
-	}
-	return nil
-}
-
 func (c *AuthContext) GetUserId() string {
-	t := c.Get("user")
-	fmt.Println(t)
 	token := c.Get("user").(*jwt.Token)
 	claim := token.Claims.(*JWTClaim)
 	return claim.ID

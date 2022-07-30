@@ -12,6 +12,7 @@ func SetRout(e *echo.Echo) error {
 	e.POST("/login", controllers.Login)
 
 	authApi := e.Group("", middleware.AuthApi)
+	authApi = authApi.Group("", middleware.ValidateToken())
 
 	authApi.GET("/users", controllers.Index)
 	authApi.GET("/users/:id", controllers.Show)
