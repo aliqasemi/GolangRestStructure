@@ -14,12 +14,12 @@ func SetRout(e *echo.Echo) error {
 	authApi := e.Group("", middleware.AuthApi)
 	authApi = authApi.Group("", middleware.ValidateToken())
 
-	authApi.GET("/users", controllers.Index)
-	authApi.GET("/users/:id", controllers.Show)
-	authApi.POST("/users", controllers.Create)
-	authApi.PUT("/users/:id", controllers.Update)
-	authApi.DELETE("/users/:id", controllers.Delete)
-	authApi.GET("/auth", controllers.Auth)
+	authApi.GET("/users", controllers.Index, middleware.Authorize("user"))
+	authApi.GET("/users/:id", controllers.Show, middleware.Authorize("user"))
+	authApi.POST("/users", controllers.Create, middleware.Authorize("admin"))
+	authApi.PUT("/users/:id", controllers.Update, middleware.Authorize("admin"))
+	authApi.DELETE("/users/:id", controllers.Delete, middleware.Authorize("admin"))
+	authApi.GET("/auth", controllers.Auth, middleware.Authorize("user"))
 
 	return nil
 }

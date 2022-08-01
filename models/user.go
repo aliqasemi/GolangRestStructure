@@ -14,6 +14,7 @@ type User struct {
 	Password    string    `json:"password" form:"password" query:"password" param:"password" bson:"password,omitempty"`
 	PhoneNumber string    `json:"phone-number" form:"phone-number" query:"phone-number" param:"phone-number" bson:"phone-number,omitempty"`
 	Email       string    `json:"email" form:"email" query:"email" param:"email" bson:"email,omitempty"`
+	Role        string    `json:"role" form:"role" query:"role" param:"role" bson:"role,omitempty"`
 	CreatedAt   time.Time `json:"created-at" form:"created-at" query:"created-at" param:"created-at" bson:"created-at,omitempty"`
 }
 

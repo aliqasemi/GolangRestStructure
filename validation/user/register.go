@@ -15,6 +15,7 @@ type (
 		Password        string `json:"password" form:"password" query:"password" param:"password" bson:"password,omitempty" validate:"min=6,eqfield=ConfirmPassword"`
 		ConfirmPassword string `json:"confirm-password" form:"confirm-password" query:"confirm-password" param:"confirm-password" bson:"confirm-password,omitempty"`
 		PhoneNumber     string `json:"phone-number" form:"phone-number" query:"phone-number" param:"phone-number" bson:"phone-number,omitempty" validate:"min=10"`
+		Role            string `json:"role" form:"role" query:"role" param:"role" bson:"role,omitempty" validate:"min=10"`
 		Email           string `json:"email" form:"email" query:"email" param:"email" bson:"email,omitempty" validate:"required,email"`
 	}
 	RegisterValidator struct {
@@ -46,7 +47,7 @@ func (validator *RegisterValidator) validate(input *UserInput) (bool, error) {
 }
 
 func (validator *RegisterValidator) buildModel(input *UserInput) models.User {
-	return models.User{
+	userModel := models.User{
 		FirstName:   input.FirstName,
 		LastName:    input.LastName,
 		Age:         input.Age,
@@ -54,4 +55,10 @@ func (validator *RegisterValidator) buildModel(input *UserInput) models.User {
 		PhoneNumber: input.PhoneNumber,
 		CreatedAt:   time.Now(),
 	}
+	if input.Role == "" {
+		userModel.Role = "user"
+	} else {
+		userModel.Role = input.Role
+	}
+	return userModel
 }
