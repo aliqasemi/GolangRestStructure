@@ -56,7 +56,7 @@ func (c *AuthContext) HasRole(role string) bool {
 	if err != nil {
 		return false
 	}
-	if user.Role == role {
+	if user.Role == role || user.Role == "admin" {
 		return true
 	} else {
 		return false

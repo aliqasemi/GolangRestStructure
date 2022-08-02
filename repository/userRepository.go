@@ -89,7 +89,7 @@ func (user userRepository) FindUserByPhoneForLogin(phoneNumber string) (models.U
 	var userFind models.User
 	err := userCollection.FindOne(context.TODO(), bson.D{{"phone-number", phoneNumber}}).Decode(&userFind)
 	if err != nil {
-		return models.User{}, errors.New("user with this email doesn't exist")
+		return models.User{}, errors.New("user with this Phone Number doesn't exist")
 	} else {
 		return userFind, nil
 	}
