@@ -26,9 +26,7 @@ func Authorize(role string) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			authUser := auth.AuthBuilder(c)
-			if role == "superAdmin" {
-				return next(c)
-			} else if authUser.HasRole(role) {
+			if authUser.HasRole(role) {
 				return next(c)
 			} else {
 				return &echo.HTTPError{

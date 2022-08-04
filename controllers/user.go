@@ -115,7 +115,7 @@ func Login(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, errors.New("invalid password"))
 	}
 
-	tokenString, err := auth.GenerateJWT(userData.Email, userData.UserName, userData.ID)
+	tokenString, err := auth.GenerateJWT(userData.Email, userData.UserName, userData.ID, userData.Role)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
